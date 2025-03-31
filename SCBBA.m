@@ -1,4 +1,4 @@
-function [SC,errorFlags] = SCBBA(SC,BPMords,magOrds,varargin)
+function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 % SCBBA
 % =====
 %
@@ -244,6 +244,7 @@ end
 %% Perform BBA routine
 
 % Loop over BPMs
+idxplane = {'H','V'};
 for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
     % Horizontal/vertical
@@ -274,14 +275,29 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 'eps',1E-6);
         end
 
-
         switch par.mode
             case 'ORB'
                 % Get orbit bump at BBA BPM
+                bpmauxname = strcat("BPM_",string(jBPM));
+                planename = strcat("plane_",idxplane(nDim));
                 [CMords,CMvec] = getOrbitBump(SC,mOrd,BPMords(nDim,jBPM),nDim,par);
+                BBAsetpoints.(bpmauxname).(planename).CMords = CMords;
+                BBAsetpoints.(bpmauxname).(planename).CMstart = ...
+                                { ...
+                                SCgetCMSetPoints(SC,par.RMstruct.CMords{1},1), ...
+                                SCgetCMSetPoints(SC,par.RMstruct.CMords{2},2) ...
+                                };
+                BBAsetpoints.(bpmauxname).(planename).CMvec = CMvec;
 
                 % Perform data measurement
+                BBAsetpoints.(bpmauxname).(planename).BPMindex = jBPM;
+                BBAsetpoints.(bpmauxname).(planename).BPMord = BPMords(nDim,jBPM);
+                BBAsetpoints.(bpmauxname).(planename).BPMords= BPMords;
+                BPMreadingsStart = SCgetBPMreading(SC);
+                BBAsetpoints.(bpmauxname).(planename).BPMstart = BPMreadingsStart;
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,CMords,CMvec);
+                BBAsetpoints.(bpmauxname).(planename).BPMpos = BPMpos;
+                BBAsetpoints.(bpmauxname).(planename).tmpTra = tmpTra;
 
             case 'TBT'
                 % Scale maximum initial trajectory variation before beam gets lost
@@ -295,6 +311,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 % Perform data measurement
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,initialZ0,kickVec);
         end
+        BBAsetpoints.(bpmauxname).(planename).mode = par.mode;
 
         % Perform data evaluation
         [OffsetChange,errorFlags(nDim,jBPM)] = dataEvaluation(SC,BPMords,jBPM,BPMpos,tmpTra,nDim,mOrd,par);
@@ -328,6 +345,10 @@ if par.fakeMeasForFailures
 end
 % 	% Remove outliers
 % 	SC = removeOutliers(SC,BPMords,magOrds,par);
+
+if nargout == 3
+    varargout{1} = BBAsetpoints;
+end
 end
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
