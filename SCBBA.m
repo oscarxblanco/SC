@@ -254,12 +254,14 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
         % Check if skew quadrupole is used
         if par.skewQuadrupole
+            BBAsetpoints.type = 'skew';
             if nDim==1
                 measDim = 2;
             else
                 measDim = 1;
             end
         else
+            BBAsetpoints.type = 'normal';
             measDim = nDim;
         end
 
@@ -292,38 +294,46 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         end
 
         % save BPM data at start in BBAsetpoints
-        BBAsetpoints.(bbabpmname).(planename).BPMindex = jBPM;
-        BBAsetpoints.(bbabpmname).(planename).BPMord = BPMords(nDim,jBPM);
-        BBAsetpoints.(bbabpmname).(planename).BPMords= BPMords;
+        BBAsetpoints.data.(bbabpmname).(planename).BPMindex = jBPM;
+        BBAsetpoints.data.(bbabpmname).(planename).BPMord = BPMords(nDim,jBPM);
+        BBAsetpoints.data.(bbabpmname).(planename).BPMords= BPMords;
 
         % BPM readings at start
         BPMstart = SCgetBPMreading(SC);
 
         % save CM data at start in BBAsetpoints
-        BBAsetpoints.(bbabpmname).(planename).CMstart = ...
+        if isempty(par.RMstruct)
+            CMtosave = SC.ORD.CM;
+        else
+            CMtosave = par.RMstruct.CMords;
+        end
+        BBAsetpoints.data.(bbabpmname).(planename).CMstart = ...
                 { ...
-                SCgetCMSetPoints(SC,par.RMstruct.CMords{1},1), ...
-                SCgetCMSetPoints(SC,par.RMstruct.CMords{2},2) ...
+                    SCgetCMSetPoints(SC,CMtosave{1},1), ...
+                    SCgetCMSetPoints(SC,CMtosave{2},2) ...
                 };
+
+        % save magnet index
+        BBAsetpoints.data.(bbabpmname).(planename).MAGord = mOrd;
 
         switch par.mode
             case 'ORB'
                 % save the initial orbit in BBAsetpoints
-                BBAsetpoints.(bbabpmname).(planename).BPMstart = BPMstart;
+                BBAsetpoints.data.(bbabpmname).(planename).BPMstart = BPMstart;
 
                 % Get orbit bump at BBA BPM
                 [CMords,CMvec] = getOrbitBump(SC,mOrd,BPMords(nDim,jBPM),nDim,par);
 
                 % save the CM setpoint and ords in BBAsetpoints
-                BBAsetpoints.(bbabpmname).(planename).CMords = CMords;
-                BBAsetpoints.(bbabpmname).(planename).CMvec = CMvec;
+                BBAsetpoints.data.(bbabpmname).(planename).CMords = CMords;
+                BBAsetpoints.data.(bbabpmname).(planename).CMvec = CMvec;
 
                 % Perform data measurement
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,CMords,CMvec);
 
             case 'TBT'
                 % save the initial trajectory in BBAsetpoints
-                BBAsetpoints.(bbabpmname).(planename).BPMstart = ...
+                BBAsetpoints.data.(bbabpmname).(planename).BPMstart = ...
                     BPMstart(:, (BPMind+1):(BPMind+par.maxNumOfDownstreamBPMs));
 
                 % Scale maximum initial trajectory variation before beam gets lost
@@ -335,16 +345,16 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 end
 
                 % save the CM setpoint and ords in BBAsetpoints
-                BBAsetpoints.(bbabpmname).(planename).kickVec = kickVec;
+                BBAsetpoints.data.(bbabpmname).(planename).kickVec = kickVec;
 
                 % Perform data measurement
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,initialZ0,kickVec);
         end
 
         % save BBAsetpoints output
-        BBAsetpoints.(bbabpmname).(planename).BPMpos = BPMpos;
-        BBAsetpoints.(bbabpmname).(planename).tmpTra = tmpTra;
-        BBAsetpoints.(bbabpmname).(planename).mode = par.mode;
+        BBAsetpoints.data.(bbabpmname).(planename).BPMpos = BPMpos;
+        BBAsetpoints.data.(bbabpmname).(planename).tmpTra = tmpTra;
+        BBAsetpoints.data.(bbabpmname).(planename).mode = par.mode;
 
         % Perform data evaluation
         [OffsetChange,errorFlags(nDim,jBPM)] = dataEvaluation(SC,BPMords,jBPM,BPMpos,tmpTra,nDim,mOrd,par);
