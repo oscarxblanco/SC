@@ -275,7 +275,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         mOrd = magOrds(nDim,jBPM);
 
         % Define names for BBAsetpoints fields
-        bbabpmname = strcat("BPM_",string(jBPM));
+        bbabpmname = strcat("BBA_BPM_",string(jBPM));
         planename = strcat("plane_",idxplane{nDim},"CM_", ...
                                     idxplane{measDim},"BPM");
 
