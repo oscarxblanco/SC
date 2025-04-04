@@ -276,7 +276,8 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
         % Define names for BBAsetpoints fields
         bbabpmname = strcat("BPM_",string(jBPM));
-        planename = strcat("plane_",idxplane{nDim},"_",idxplane{measDim});
+        planename = strcat("plane_",idxplane{nDim},"CM_", ...
+                                    idxplane{measDim},"BPM");
 
         % Switch off sextupole coil at BBA magnet?
         if par.switchOffSext
@@ -302,7 +303,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         BPMstart = SCgetBPMreading(SC);
 
         % save CM data at start in BBAsetpoints
-        if isempty(par.RMstruct)
+        if isempty(par.RMstruct) || isempty(par.RMstruct.CMords)
             CMtosave = SC.ORD.CM;
         else
             CMtosave = par.RMstruct.CMords;
@@ -315,6 +316,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
         % save magnet index
         BBAsetpoints.data.(bbabpmname).(planename).MAGord = mOrd;
+        BBAsetpoints.data.(bbabpmname).(planename).MAGspvec = par.magSPvec{nDim,jBPM};
 
         switch par.mode
             case 'ORB'
