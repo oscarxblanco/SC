@@ -8,7 +8,7 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 %
 % SYNOPSIS
 % --------
-% `[SC, errorFlags] = SCBBA(SC, BPMords, magOrds, [, options])`
+% `[SC, errorFlags, [, OutputOptions]] = SCBBA(SC, BPMords, magOrds, [, options])`
 %
 %
 % DESCRIPTION
@@ -156,6 +156,53 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 % (4):: All downstream BPM measurements failed
 % (5):: Unexpected error during data evaluation
 % (6):: Calculated BPM offset change too large (see option 'outlierRejectionAt')
+%
+% OUTPUT OPTIONS:
+% `'BBAsetpoints'`:
+%
+%       [SC, errorFlags, BBAsetpoints] = SCBBA(SC, ...)
+%
+%       Returns a structure containing the BBA quad and corrector settings,
+%       and BPM readings per BBA-BPM. Each cell in the structure is
+%       a BBA-BPM numbered in order.
+%
+%       e.g.
+%           BBAsetpoints.BBA_BPM_1
+%       has the first BBA-BPM set points during BBA.
+%
+%       The cell contains the following fields:
+%           `'mode'`::
+%                 TBT or ORB.
+%           `'type'`::
+%                 Normal or Skew.
+%           `'MAGord'`::
+%                 Magnet index.
+%           `'MAGspvec'`::
+%                 Vector of values for the BBA.
+%           `'CMords`' (`RMstruct.CMords`)::
+%                 Corrector magnets ords. By default from
+%                 RMstruct.CMords, otherwise, SC.ORD.CM
+%           `'CMstart'`::
+%                 Correctors before BBA.
+%           `'CMvec'`::
+%                 Correctors setpoints during BBA (only in ORB mode).
+%           `'kickVec'`::
+%                 Kick vector setpoints during BBA (only in TBT mode).
+%           `'BPMindex'`::
+%                 i for the i-th BPM in the BBA-BPM routine.
+%           `'BPMord'`::
+%                 Index along the ring of the BBA-BPM.
+%           `'BPMords'`::
+%                 Indexes of all BBA-BPMs.
+%           `'BPMstart'`::
+%                 BPM readings from SCgetBPMreading before BBA.
+%                 In ORB mode, it contains all BPMs, while,
+%                 in TBT mode it contains the downstream
+%                 1:maxNumOfDownstreamBPMs.
+%           `'BPMpos'`::
+%                 BPM readings on the measured plane at the BBA-BPM during BBA.
+%           `'tmpTra'`::
+%                 BPM difference on the measured plane from quad variation.
 %
 % SEE ALSO
 % --------
