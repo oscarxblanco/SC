@@ -92,8 +92,8 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 %	 If true, it is assumed that a skew quadrupole is used. Thus, the BPM readings in the
 %    dimension other than the trajectory/orbit excitation is used for evaluation.
 % `'SingleCorrOrbit'` (`0`)::
-%	 If true, the most efective single corrector based on the response matrix
-%	 and the avilable kick is used. This method is usually faster but less acurate than the orbit
+%	 If true, the most effective single corrector based on the response matrix
+%	 and the available kick is used. This method is usually faster but less acurate than the orbit
 %	 bump metod since the extra orbit around the machine adds non
 %	 linearities.
 % `'switchOffSext'` (`0`)::
