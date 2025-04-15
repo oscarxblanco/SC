@@ -927,9 +927,10 @@ if par.SingleCorrOrbit
         for nCM=1:length(par.RMstruct.CMords{nDim})
             CMvec0{nDim}(nCM) = SCgetCMSetPoints(SC,par.RMstruct.CMords{nDim}(nCM),nDim);
         end
-        CMlimit{nDim}=atgetfieldvalues(SC.RING(par.RMstruct.CMords{nDim}),'CMlimit',{1,nDim})';
+        CMlimit{nDim}=atgetfieldvalues(SC.RING(par.RMstruct.CMords{nDim}),'CMlimit',{1,nDim},'Default',NaN)';
         CMrange{nDim}=abs(CMlimit{nDim})-abs(CMvec0{nDim});
         CMrange{nDim}(CMrange{nDim}<0)=0;
+        CMrange{nDim}(isnan(CMrange{nDim}))=1;
     end
 
     % find corrector that maximizes availiable kick
