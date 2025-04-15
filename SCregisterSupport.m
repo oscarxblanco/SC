@@ -168,7 +168,7 @@ function SC = SCregisterSupport(SC,varargin)
 		end
 		
 		if any(diff(varargin{2},1)<0)
-			fprintf('%d ''%s'' endpoint(s) might be upstream of startpoint(s).',sum(diff(varargin{2},1)<0),varargin{1})
+			fprintf('%d ''%s'' endpoint(s) might be upstream of startpoint(s).\n',sum(diff(varargin{2},1)<0),varargin{1})
 		end
 
 		if any(strcmp(varargin,{'Offset'}))

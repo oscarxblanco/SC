@@ -93,7 +93,7 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 %    dimension other than the trajectory/orbit excitation is used for evaluation.
 % `'SingleCorrOrbit'` (`0`)::
 %	 If true, the most efective single corrector based on the response matrix
-%	 is used. This method is usually faster but less acurate than the orbit
+%	 and the avilable kick is used. This method is usually faster but less acurate than the orbit
 %	 bump metod since the extra orbit around the machine adds non
 %	 linearities.
 % `'switchOffSext'` (`0`)::
@@ -916,9 +916,25 @@ W0(nDim,max(1,tmpBPMind-par.orbBumpWindow):(tmpBPMind-1)) = 0;
 W0(nDim,(tmpBPMind+1):min(length(par.RMstruct.BPMords),tmpBPMind+par.orbBumpWindow)) = 0;
 
 if par.SingleCorrOrbit
-    % just choose the corrector with the largest effect
+    % just choose the corrector with the largest effect (taking into account its limits)
     fprintf('\n');
-    [maxRM_all,indmax_all]=max(abs(par.RMstruct.RM),[],2);
+
+    % Read initial, limit and available range CM setpoints
+    CMvec0=cell(2,1);
+    CMlimit=cell(2,1);
+    CMrange=cell(2,1);
+    for nDim=1:2 
+        for nCM=1:length(par.RMstruct.CMords{nDim})
+            CMvec0{nDim}(nCM) = SCgetCMSetPoints(SC,par.RMstruct.CMords{nDim}(nCM),nDim);
+        end
+        CMlimit{nDim}=atgetfieldvalues(SC.RING(par.RMstruct.CMords{nDim}),'CMlimit',{1,nDim})';
+        CMrange{nDim}=abs(CMlimit{nDim})-abs(CMvec0{nDim});
+        CMrange{nDim}(CMrange{nDim}<0)=0;
+    end
+
+    % find corrector that maximizes availiable kick
+    [~,indmax_all]=max(abs(par.RMstruct.RM.*([CMrange{1}(:)' CMrange{2}(:)'])),[],2);
+    maxRM_all=diag(abs(par.RMstruct.RM(:,indmax_all)));
     indmax{1}=indmax_all(1:length(par.RMstruct.BPMords));
     indmax{2}=indmax_all((1+length(par.RMstruct.BPMords)):(2*length(par.RMstruct.BPMords)))-length(par.RMstruct.CMords{1});
     maxRM{1}=maxRM_all(1:length(par.RMstruct.BPMords));
@@ -929,11 +945,11 @@ if par.SingleCorrOrbit
     % Read initial and current CM setpoints
     for nDim=1:2
         for nCM=1:length(par.RMstruct.CMords{nDim})
-            CMvec0{nDim}(nCM) = SCgetCMSetPoints(SC,par.RMstruct.CMords{nDim}(nCM),nDim);
             deltaCM{nDim}(nCM)=0;
         end
         deltaCM{nDim}(indmax{nDim}(tmpBPMind)) = par.BBABPMtarget/maxRM{nDim}(tmpBPMind);
     end
+
 else
     % Run feedback
     [CUR,~] = SCfeedbackRun(SC,par.RMstruct.MinvCO,...
