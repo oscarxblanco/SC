@@ -934,7 +934,7 @@ if par.SingleCorrOrbit
         CMrange{nDim}(isnan(CMrange{nDim}))=1;
     end
 
-    % find corrector that maximizes availiable kick
+    % find corrector that maximizes available kick
     [~,indmax_all]=max(abs(par.RMstruct.RM.*([CMrange{1}(:)' CMrange{2}(:)'])),[],2);
     maxRM_all=diag(abs(par.RMstruct.RM(:,indmax_all)));
     indmax{1}=indmax_all(1:length(par.RMstruct.BPMords));
