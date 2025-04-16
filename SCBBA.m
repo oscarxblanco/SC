@@ -93,8 +93,9 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 %    dimension other than the trajectory/orbit excitation is used for evaluation.
 % `'SingleCorrOrbit'` (`0`)::
 %	 If true, the most effective single corrector based on the response matrix
-%	 and the available kick  (CMlimit -abs(setpoint)) is used. In no 'CMlimit' 
-%    is defined the weight is 1.
+%	 and the available kick  (CMlimit -abs(setpoint)) is used. If some CM have 'CMlimit' 
+%    and others don't, the default limit is max(CMlimit). In no 'CMlimit' is 
+%    defined in any CM the weight is 1.
 %    This method is usually faster but less acurate than the orbit
 %	 bump metod since the extra orbit around the machine adds non linearities.
 % `'switchOffSext'` (`0`)::
@@ -929,9 +930,14 @@ if par.SingleCorrOrbit
             CMvec0{nDim}(nCM) = SCgetCMSetPoints(SC,par.RMstruct.CMords{nDim}(nCM),nDim);
         end
         CMlimit{nDim}=atgetfieldvalues(SC.RING(par.RMstruct.CMords{nDim}),'CMlimit',{1,nDim},'Default',NaN)';
+        MaxLim=max(CMlimit{nDim});
         CMrange{nDim}=abs(CMlimit{nDim})-abs(CMvec0{nDim});
         CMrange{nDim}(CMrange{nDim}<0)=0;
-        CMrange{nDim}(isnan(CMrange{nDim}))=1;
+        if isnan(MaxLim)
+            CMrange{nDim}(isnan(CMrange{nDim}))=1;
+        else
+            CMrange{nDim}(isnan(CMrange{nDim}))=MaxLim;
+        end
     end
 
     % find corrector that maximizes available kick
