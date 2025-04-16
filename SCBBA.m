@@ -94,7 +94,7 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 % `'SingleCorrOrbit'` (`0`)::
 %	 If true, the most effective single corrector based on the response matrix
 %	 and the available kick  (CMlimit -abs(setpoint)) is used. If some CM have 'CMlimit' 
-%    and others don't, the default limit is max(CMlimit). In no 'CMlimit' is 
+%    and others don't, the default limit is max(CMlimit). If no 'CMlimit' is 
 %    defined in any CM the weight is 1.
 %    This method is usually faster but less acurate than the orbit
 %	 bump metod since the extra orbit around the machine adds non linearities.
