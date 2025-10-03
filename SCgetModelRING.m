@@ -60,7 +60,7 @@ function RING = SCgetModelRING(SC,varargin)
 		end
 
 		% Get cavity setpoints
-		if isfield(SC.ORD,'Cavity') && isfield(RING{ord},'Frequency')
+		if isfield(SC.ORD,'Cavity') && isfield(RING{ord},'Frequency') && not(startsWith(RING{ord}.FamName,'har','IgnoreCase',true))
 			for field={'Frequency','Voltage','TimeLag'}
 				RING{ord}.(field{1}) = SC.RING{ord}.([field{1} 'SetPoint']);
 			end
