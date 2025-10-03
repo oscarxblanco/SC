@@ -246,7 +246,7 @@ end
 
 function res = isSetback(BPMhist)
 	% True if, last correction step resulted in less transmission
-	res = BPMhist(1)~=0 && BPMhist(1)<BPMhist(3) && BPMhist(2)<BPMhist(3);
+	res = BPMhist(1)~=0 && BPMhist(1)<0.8*BPMhist(3) && BPMhist(2)<0.8*BPMhist(3) && BPMhist(3)<=BPMhist(4) && BPMhist(4)<=BPMhist(5); 
 end
 
 function res = isRepro(BPMhist,N)
