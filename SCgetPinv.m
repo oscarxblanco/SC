@@ -74,7 +74,7 @@ function Minv = SCgetPinv(M,varargin)
 	par = p.Results;
 
 	% Singular value decomposition
-	[U,S,V] = svd(M);
+	[U,S,V] = svd(M,'econ');
 
 	% Get singular values
 	SVs = diag(S);
