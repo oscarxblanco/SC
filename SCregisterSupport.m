@@ -122,7 +122,11 @@ function SC = SCregisterSupport(SC,varargin)
 	type = varargin{1};
 
 	% Define start end end ordinates in SC
-	SC.ORD.(type) = ords;
+    if not(isfield(SC.ORD,type))
+    	SC.ORD.(type) = ords;
+    else
+        SC.ORD.(type) = sort([ords SC.ORD.(type)]);
+    end
 
 	% Loop over elements
 	for ordPair=ords
