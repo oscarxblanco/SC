@@ -242,6 +242,7 @@ addOptional(p,'quadStrengthPhaseAdvance',[0.95 1.05]);
 addOptional(p,'plotLines',0);
 addOptional(p,'plotResults',0);
 addOptional(p,'verbose',0);
+addOptional(p,'DimList',1:2);
 parse(p,varargin{:});
 par = p.Results;
 
@@ -268,6 +269,11 @@ initOffsetErrors = getBPMoffsetFromMag(SC,BPMords,magOrds);
 
 % Initialize error flags
 errorFlags = nan(size(BPMords));
+if par.DimList==1
+    errorFlags(2,:)=0;
+elseif par.DimList==2
+    errorFlags(1,:)=0;
+end
 
 % Offset and kick angle variation at injection (for trajectory mode)
 kickVec0  = par.maxTrajChangeAtInjection' .* repmat(linspace(-1,1,par.nSteps),2,1);
@@ -298,7 +304,7 @@ idxplane = {'H','V'};
 for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
     % Horizontal/vertical
-    for nDim=1:size(BPMords,1)
+    for nDim=par.DimList
         if par.verbose;fprintf('BBA-BPM %d/%d, nDim = %d\n',jBPM,size(BPMords,2),nDim);end
 
         % Check if skew quadrupole is used
