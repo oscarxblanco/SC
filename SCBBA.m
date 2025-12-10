@@ -145,6 +145,9 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 %    If true, final BBA results are plotted.
 % `'verbose'` (0)::
 %	 If true, debug information is printed.
+% `'DimList'` (`[1 2]`)::
+%   Dimensions to launch the measuremnt. If
+%   DimList=1 then errorFlags(2,:)=0, If DimList=2 then errorFlags(1,:)=0;
 %
 % ERROR FLAGS
 % -----------
@@ -205,6 +208,8 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 %                 BPM readings on the measured plane at the BBA-BPM during BBA.
 %           `'tmpTra'`::
 %                 BPM difference on the measured plane from quad variation.
+
+
 %
 % SEE ALSO
 % --------
