@@ -125,7 +125,9 @@ function SC = SCregisterSupport(SC,varargin)
     if not(isfield(SC.ORD,type))
     	SC.ORD.(type) = ords;
     else
-        SC.ORD.(type) = sort([ords SC.ORD.(type)]);
+        newords=[ords SC.ORD.(type)];
+        [~,inds]=sort(newords(1,:));
+        SC.ORD.(type) = newords(:,inds);
     end
 
 	% Loop over elements
