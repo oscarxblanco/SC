@@ -69,6 +69,7 @@ function SC = updateMagnets(SC,source,target)
 	SC.RING{target}.PolynomB = SC.RING{source}.SetPointB .* addPadded(ones(size(SC.RING{source}.SetPointB)),SC.RING{source}.CalErrorB);
 	SC.RING{target}.PolynomA = SC.RING{source}.SetPointA .* addPadded(ones(size(SC.RING{source}.SetPointA)),SC.RING{source}.CalErrorA);
 
+
 	% Initialize temporary systematic multipole arrays
 	sysPolynomB = [];
 	sysPolynomA = [];
@@ -167,6 +168,11 @@ function SC = updateMagnets(SC,source,target)
 	% Adjust order for tracking
 	SC.RING{target}.MaxOrder=length(SC.RING{target}.PolynomB)-1;
 
+    % Adjust K in case is quad
+    if isfield(SC.RING{target},'K')
+        SC.RING{target}.K=SC.RING{target}.PolynomB(2);
+    end
+
 end
 
 
@@ -182,3 +188,5 @@ function v = addPadded(v1,v2)
 	if l1>l2; v2(l1)=0; end
 	v=v1+v2;
 end
+
+
