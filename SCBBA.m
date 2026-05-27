@@ -248,6 +248,7 @@ addOptional(p,'plotLines',0);
 addOptional(p,'plotResults',0);
 addOptional(p,'verbose',0);
 addOptional(p,'DimList',1:2);
+addOptional(p,'ZeroCMMag',false);
 parse(p,varargin{:});
 par = p.Results;
 
@@ -903,11 +904,28 @@ function [CMords,CMvec] = getOrbitBump(SC,mOrd,BPMord,nDim,par)
 
 
 % Exclude dip. compensation CM (needed if considered quadrupole has reverse bending)
-tmpCMind = find(par.RMstruct.CMords{1}==mOrd);
-if ~isempty(tmpCMind)
-    par.RMstruct.RM(:,tmpCMind)      = [];
-    par.RMstruct.CMords{1}(tmpCMind) = [];
+HcmMagInd = find(par.RMstruct.CMords{1}==mOrd);
+VcmMagInd = find(par.RMstruct.CMords{2}==mOrd);
+
+if ~isempty(HcmMagInd)
+    if par.ZeroCMMag
+        SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),0,1,'abs');
+    end
+    par.RMstruct.RM(:,HcmMagInd)      = [];
+    par.RMstruct.CMords{1}(HcmMagInd) = [];
 end
+
+if ~isempty(VcmMagInd) 
+    if par.ZeroCMMag
+        SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(VcmMagInd),0,2,'abs');
+    end
+    par.RMstruct.RM(:,VcmMagInd)      = [];
+    par.RMstruct.CMords{2}(VcmMagInd) = [];
+
+end
+
+
+
 
 % Get actual index-ordinate pairing of BBA-BPM and orbit feedback BPMs
 tmpBPMind = find(BPMord==par.RMstruct.BPMords);
