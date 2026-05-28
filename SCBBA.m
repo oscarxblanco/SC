@@ -139,6 +139,10 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 % `'quadStrengthPhaseAdvance'` (`[0.95 1.05]`)::
 %	 Relative magnet strength variation used to change the phase advance between
 %    injection and BBA-BPM (2-turn mode only).
+% `'ZeroCMMag'` (0)::
+%	 If true, in case of orbit corrector magnets sharing the same element as a BBA magnet, its
+%	 orbit correction strength is zeroed in to avoid a systematic offset
+%	 error.
 % `'plotLines'` (0)::
 %	 If true, each injected beam and intermediate BBA results will be plotted.
 % `'plotResults'` (0)::
@@ -248,7 +252,7 @@ addOptional(p,'plotLines',0);
 addOptional(p,'plotResults',0);
 addOptional(p,'verbose',0);
 addOptional(p,'DimList',1:2);
-addOptional(p,'ZeroCMMag',false);
+addOptional(p,'ZeroCMMag',0);
 parse(p,varargin{:});
 par = p.Results;
 
