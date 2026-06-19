@@ -248,6 +248,8 @@ addOptional(p,'plotLines',0);
 addOptional(p,'plotResults',0);
 addOptional(p,'verbose',0);
 addOptional(p,'DimList',1:2);
+addOptional(p,'ZeroCMMag',false);
+
 parse(p,varargin{:});
 par = p.Results;
 
@@ -370,6 +372,47 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         BBAsetpoints.(bbabpmname).MAGord = mOrd;
         BBAsetpoints.(bbabpmname).MAGspvec = par.magSPvec{nDim,jBPM};
 
+        if par.ZeroCMMag
+            SC_initial=SC;
+            R0 = SCgetBPMreading(SC);
+            RM_initial=par.RMstruct;
+            HcmMagInd = find(par.RMstruct.CMords{1}==mOrd,1);
+            VcmMagInd = find(par.RMstruct.CMords{2}==mOrd,1);
+            if ~isempty(HcmMagInd)
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),0,1,'abs');
+                par.RMstruct.RM(:,HcmMagInd)      = [];
+                par.RMstruct.CMords{1}(HcmMagInd) = [];
+            end
+            if ~isempty(VcmMagInd)
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(VcmMagInd),0,2,'abs');
+                par.RMstruct.RM(:,numel(par.RMstruct.CMords{1})+VcmMagInd)      = [];
+                par.RMstruct.CMords{2}(VcmMagInd) = [];
+            end
+            R1 = SCgetBPMreading(SC);
+            if ~isempty(HcmMagInd)
+                DX=R1(1,jBPM)-R0(1,jBPM);
+                nc=numel(par.RMstruct.CMords{1});
+                Rx=par.RMstruct.RM(jBPM,1:nc);
+                [~,imax]=max(abs(Rx));
+                Rmax=Rx(imax);
+                change=-DX/Rmax;
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(imax),change,1,'add');
+            end
+
+            if ~isempty(VcmMagInd)
+                DY=R1(2,jBPM)-R0(2,jBPM);
+                nx=numel(par.RMstruct.BPMords);
+                ncx=numel(par.RMstruct.CMords{1});
+                ncy=numel(par.RMstruct.CMords{2});
+                Ry=par.RMstruct.RM(nx+jBPM,ncx+(1:ncy));
+                [~,imay]=max(abs(Ry));
+                Rmay=Ry(imay);
+                change=-DY/Rmay;
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(imay),change,1,'add');
+            end
+
+        end
+
         switch par.mode
             case 'ORB'
                 % save the initial orbit in BBAsetpoints
@@ -403,6 +446,22 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
                 % Perform data measurement
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,initialZ0,kickVec);
+        end
+
+        % Return SC to initial state if CM was switched off
+        if par.ZeroCMMag
+            HcmMagInd = find(par.RMstruct.CMords{1}==mOrd,1);
+            VcmMagInd = find(par.RMstruct.CMords{2}==mOrd,1);
+             if ~isempty(HcmMagInd)
+                H0=SCgetCMSetPoints(SC_initial,par.RMstruct.CMords{1},1);
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1},H0,1,'abs');
+                par.RMstruct= RM_initial;
+            end
+            if ~isempty(VcmMagInd)
+                V0=SCgetCMSetPoints(SC_initial,par.RMstruct.CMords{1},2);
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2},V0,2,'abs');
+                par.RMstruct= RM_initial;
+            end
         end
 
         % save BBAsetpoints output
