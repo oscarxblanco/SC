@@ -148,6 +148,15 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 % `'DimList'` (`[1 2]`)::
 %   Dimensions to launch the measuremnt. If
 %   DimList=1 then errorFlags(2,:)=0, If DimList=2 then errorFlags(1,:)=0;
+% `'ZeroCMMag'` (0)::
+%	 If true, in case of orbit corrector magnets sharing the same element as a BBA magnet, its
+%	 orbit correction strength is zeroed in to avoid a systematic offset
+%	 error.
+% `'TargetOrbit'` (0)::
+%	 During the orbit bump calculation, break, if the RMS BPM reading reaches this value.
+% `'epsOrbit'` (0)::
+%   During the orbit bump calculation, break, if the coefficient of variation of the RMS BPM reading is below
+%	this value
 %
 % ERROR FLAGS
 % -----------
