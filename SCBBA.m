@@ -395,10 +395,10 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 DX=R1(1,jBPM)-R0(1,jBPM);
                 nc=numel(par.RMstruct.CMords{1});
                 Rx=par.RMstruct.RM(jBPM,1:nc);
-                [~,imax]=max(abs(Rx));
-                Rmax=Rx(imax);
+                [~,imax]=sort(abs(Rx),'descend');
+                Rmax=Rx(imax(2));
                 change=-DX/Rmax;
-                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(imax),change,1,'add');
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(imax(2)),change,1,'add');
             end
 
             if ~isempty(VcmMagInd)
@@ -407,10 +407,10 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 ncx=numel(par.RMstruct.CMords{1});
                 ncy=numel(par.RMstruct.CMords{2});
                 Ry=par.RMstruct.RM(nx+jBPM,ncx+(1:ncy));
-                [~,imay]=max(abs(Ry));
-                Rmay=Ry(imay);
+                [~,imay]=sort(abs(Ry),'descend');
+                Rmay=Ry(imay(2));
                 change=-DY/Rmay;
-                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(imay),change,2,'add');
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(imay(2)),change,2,'add');
             end
 
         end
