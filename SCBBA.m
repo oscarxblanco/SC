@@ -396,7 +396,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 par.RMstruct.CMords{1}(HcmMagInd) = [];
             end
             if ~isempty(VcmMagInd)
-                Vini = SCgetCMSetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),1);
+                Vini = SCgetCMSetPoints(SC,par.RMstruct.CMords{2}(HcmMagInd),2);
                 SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(VcmMagInd),0,2,'abs');
                 par.RMstruct.RM(:,numel(par.RMstruct.CMords{1})+VcmMagInd)      = [];
                 par.RMstruct.CMords{2}(VcmMagInd) = [];
