@@ -390,11 +390,13 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
             HcmMagInd = find(par.RMstruct.CMords{1}==mOrd,1);
             VcmMagInd = find(par.RMstruct.CMords{2}==mOrd,1);
             if ~isempty(HcmMagInd)
+                Hini = SCgetCMSetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),1);
                 SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),0,1,'abs');
                 par.RMstruct.RM(:,HcmMagInd)      = [];
                 par.RMstruct.CMords{1}(HcmMagInd) = [];
             end
             if ~isempty(VcmMagInd)
+                Vini = SCgetCMSetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),1);
                 SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(VcmMagInd),0,2,'abs');
                 par.RMstruct.RM(:,numel(par.RMstruct.CMords{1})+VcmMagInd)      = [];
                 par.RMstruct.CMords{2}(VcmMagInd) = [];
@@ -433,8 +435,27 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 [CMords,CMvec] = getOrbitBump(SC,mOrd,BPMords(nDim,jBPM),nDim,par);
 
                 % save the CM setpoint and ords in BBAsetpoints
-                BBAsetpoints.(bbabpmname).CMords = CMords;
-                BBAsetpoints.(bbabpmname).CMvec = CMvec;
+                if par.ZeroCMMag
+                    CMordsini=RM_initial.CMords;
+                    BBAsetpoints.(bbabpmname).CMords=CMordsini;
+                    if ~isempty(HcmMagInd)
+                        v0=CMvec{1};
+                        v1=Hini*ones(size(v0,1),1);
+                        BBAsetpoints.(bbabpmname).CMvec{1}=[v0(:,1:(HcmMagInd-1)) v1 v0(:,HcmMagInd:end)];
+                    else
+                        BBAsetpoints.(bbabpmname).CMvec{1}=CMvec{1};
+                    end
+                    if ~isempty(VcmMagInd)
+                        v0=CMvec{2};
+                        v1=Vini*ones(size(v0,1),1);
+                        BBAsetpoints.(bbabpmname).CMvec{2}=[v0(:,1:(VcmMagInd-1)) v1 v0(:,VcmMagInd:end)];
+                    else
+                        BBAsetpoints.(bbabpmname).CMvec{2}=CMvec{2};
+                    end
+                else
+                    BBAsetpoints.(bbabpmname).CMords = CMords;
+                    BBAsetpoints.(bbabpmname).CMvec = CMvec;
+                end
 
                 % Perform data measurement
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,CMords,CMvec);
