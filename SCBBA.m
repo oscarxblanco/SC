@@ -342,7 +342,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         mOrd = magOrds(nDim,jBPM);
 
         % Define names for BBAsetpoints fields
-        bbabpmname = strcat("BBA_BPM_",string(jBPM));
+        bbabpmname = strcat("BBA_plane",string(nDim) ,"_BPM_",string(jBPM));
 
         % Switch off sextupole coil at BBA magnet?
         if par.switchOffSext
@@ -384,7 +384,6 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         BBAsetpoints.(bbabpmname).MAGspvec = par.magSPvec{nDim,jBPM};
 
         if par.ZeroCMMag
-            SC_initial=SC;
             R0 = SCgetBPMreading(SC,'BPMords',par.RMstruct.BPMords);
             RM_initial=par.RMstruct;
             HcmMagInd = find(par.RMstruct.CMords{1}==mOrd,1);
@@ -482,16 +481,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
         % Return SC to initial state if CM was switched off
         if par.ZeroCMMag
-            HcmMagInd = find(par.RMstruct.CMords{1}==mOrd,1);
-            VcmMagInd = find(par.RMstruct.CMords{2}==mOrd,1);
-             if ~isempty(HcmMagInd)
-                H0=SCgetCMSetPoints(SC_initial,par.RMstruct.CMords{1},1);
-                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1},H0,1,'abs');
-                par.RMstruct= RM_initial;
-            end
-            if ~isempty(VcmMagInd)
-                V0=SCgetCMSetPoints(SC_initial,par.RMstruct.CMords{1},2);
-                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2},V0,2,'abs');
+             if ~isempty(HcmMagInd) || ~isempty(VcmMagInd)
                 par.RMstruct= RM_initial;
             end
         end
