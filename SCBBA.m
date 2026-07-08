@@ -148,6 +148,15 @@ function [SC,errorFlags,varargout] = SCBBA(SC,BPMords,magOrds,varargin)
 % `'DimList'` (`[1 2]`)::
 %   Dimensions to launch the measuremnt. If
 %   DimList=1 then errorFlags(2,:)=0, If DimList=2 then errorFlags(1,:)=0;
+% `'ZeroCMMag'` (0)::
+%	 If true, in case of orbit corrector magnets sharing the same element as a BBA magnet, its
+%	 orbit correction strength is zeroed in to avoid a systematic offset
+%	 error.
+% `'TargetOrbit'` (0)::
+%	 During the orbit bump calculation, break, if the RMS BPM reading reaches this value.
+% `'epsOrbit'` (0)::
+%   During the orbit bump calculation, break, if the coefficient of variation of the RMS BPM reading is below
+%	this value
 %
 % ERROR FLAGS
 % -----------
@@ -248,6 +257,10 @@ addOptional(p,'plotLines',0);
 addOptional(p,'plotResults',0);
 addOptional(p,'verbose',0);
 addOptional(p,'DimList',1:2);
+addOptional(p,'ZeroCMMag',false);
+addOptional(p,'TargetOrbit',0);
+addOptional(p,'epsOrbit',0);
+
 parse(p,varargin{:});
 par = p.Results;
 
@@ -329,7 +342,7 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         mOrd = magOrds(nDim,jBPM);
 
         % Define names for BBAsetpoints fields
-        bbabpmname = strcat("BBA_BPM_",string(jBPM));
+        bbabpmname = strcat("BBA_plane",string(nDim) ,"_BPM_",string(jBPM));
 
         % Switch off sextupole coil at BBA magnet?
         if par.switchOffSext
@@ -370,6 +383,48 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
         BBAsetpoints.(bbabpmname).MAGord = mOrd;
         BBAsetpoints.(bbabpmname).MAGspvec = par.magSPvec{nDim,jBPM};
 
+        if par.ZeroCMMag
+            R0 = SCgetBPMreading(SC,'BPMords',par.RMstruct.BPMords);
+            RM_initial=par.RMstruct;
+            HcmMagInd = find(par.RMstruct.CMords{1}==mOrd,1);
+            VcmMagInd = find(par.RMstruct.CMords{2}==mOrd,1);
+            if ~isempty(HcmMagInd)
+                Hini = SCgetCMSetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),1);
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(HcmMagInd),0,1,'abs');
+                par.RMstruct.RM(:,HcmMagInd)      = [];
+                par.RMstruct.CMords{1}(HcmMagInd) = [];
+            end
+            if ~isempty(VcmMagInd)
+                Vini = SCgetCMSetPoints(SC,par.RMstruct.CMords{2}(HcmMagInd),2);
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(VcmMagInd),0,2,'abs');
+                par.RMstruct.RM(:,numel(par.RMstruct.CMords{1})+VcmMagInd)      = [];
+                par.RMstruct.CMords{2}(VcmMagInd) = [];
+            end
+            R1 = SCgetBPMreading(SC,'BPMords',par.RMstruct.BPMords);
+            if ~isempty(HcmMagInd)
+                DX=R1(1,jBPM)-R0(1,jBPM);
+                nc=numel(par.RMstruct.CMords{1});
+                Rx=par.RMstruct.RM(jBPM,1:nc);
+                [~,imax]=sort(abs(Rx),'descend');
+                Rmax=Rx(imax(2));
+                change=-DX/Rmax;
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{1}(imax(2)),change,1,'add');
+            end
+
+            if ~isempty(VcmMagInd)
+                DY=R1(2,jBPM)-R0(2,jBPM);
+                nx=numel(par.RMstruct.BPMords);
+                ncx=numel(par.RMstruct.CMords{1});
+                ncy=numel(par.RMstruct.CMords{2});
+                Ry=par.RMstruct.RM(nx+jBPM,ncx+(1:ncy));
+                [~,imay]=sort(abs(Ry),'descend');
+                Rmay=Ry(imay(2));
+                change=-DY/Rmay;
+                SC = SCsetCMs2SetPoints(SC,par.RMstruct.CMords{2}(imay(2)),change,2,'add');
+            end
+
+        end
+
         switch par.mode
             case 'ORB'
                 % save the initial orbit in BBAsetpoints
@@ -379,8 +434,27 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
                 [CMords,CMvec] = getOrbitBump(SC,mOrd,BPMords(nDim,jBPM),nDim,par);
 
                 % save the CM setpoint and ords in BBAsetpoints
-                BBAsetpoints.(bbabpmname).CMords = CMords;
-                BBAsetpoints.(bbabpmname).CMvec = CMvec;
+                if par.ZeroCMMag
+                    CMordsini=RM_initial.CMords;
+                    BBAsetpoints.(bbabpmname).CMords=CMordsini;
+                    if ~isempty(HcmMagInd)
+                        v0=CMvec{1};
+                        v1=Hini*ones(size(v0,1),1);
+                        BBAsetpoints.(bbabpmname).CMvec{1}=[v0(:,1:(HcmMagInd-1)) v1 v0(:,HcmMagInd:end)];
+                    else
+                        BBAsetpoints.(bbabpmname).CMvec{1}=CMvec{1};
+                    end
+                    if ~isempty(VcmMagInd)
+                        v0=CMvec{2};
+                        v1=Vini*ones(size(v0,1),1);
+                        BBAsetpoints.(bbabpmname).CMvec{2}=[v0(:,1:(VcmMagInd-1)) v1 v0(:,VcmMagInd:end)];
+                    else
+                        BBAsetpoints.(bbabpmname).CMvec{2}=CMvec{2};
+                    end
+                else
+                    BBAsetpoints.(bbabpmname).CMords = CMords;
+                    BBAsetpoints.(bbabpmname).CMvec = CMvec;
+                end
 
                 % Perform data measurement
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,CMords,CMvec);
@@ -403,6 +477,13 @@ for jBPM=1:size(BPMords,2) % jBPM: Index of BPM adjacent to magnet for BBA
 
                 % Perform data measurement
                 [BPMpos,tmpTra] = dataMeasurement(SC,mOrd,BPMind,jBPM,nDim,par,initialZ0,kickVec);
+        end
+
+        % Return SC to initial state if CM was switched off
+        if par.ZeroCMMag
+             if ~isempty(HcmMagInd) || ~isempty(VcmMagInd)
+                par.RMstruct= RM_initial;
+            end
         end
 
         % save BBAsetpoints output
