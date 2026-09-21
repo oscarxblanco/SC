@@ -985,7 +985,7 @@ function [CMords,CMvec] = getOrbitBump(SC,mOrd,BPMord,nDim,par)
 
 % Exclude dip. compensation CM (needed if considered quadrupole has reverse bending)
 tmpCMind = find(par.RMstruct.CMords{1}==mOrd);
-if ~isempty(tmpCMind)
+if ~isempty(tmpCMind) && strcmpi(SC.RING{mOrd},'Bend')
     par.RMstruct.RM(:,tmpCMind)      = [];
     par.RMstruct.CMords{1}(tmpCMind) = [];
 end
