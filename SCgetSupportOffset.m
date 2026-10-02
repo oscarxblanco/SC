@@ -44,9 +44,11 @@ function off = SCgetSupportOffset(SC,s)
 	off0 = zeros(3,length(s0));
 	
 	% Read elements length from RING
-	for n=1:length(SC.RING)
+    nelem = length(SC.RING);
+    lengths  = zeros(1,nelem);
+    for n=1:nelem
 		lengths(n) = SC.RING{n}.Length;
-	end
+    end
 	
 	% Circumference
 	C = sum(lengths);    
