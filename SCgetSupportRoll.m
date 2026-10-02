@@ -84,14 +84,26 @@ function roll = SCgetSupportRoll(SC,s)
 % 				fprintf('%s #%d: %.2fm\n',type{1},nEl,structLength)
 			end
 		end
-	end
+    end
 
-	% Get rolls at requested s-positions
-	[~,b] = unique(s0);
-	roll(1,:) = interp1(s0(b),roll0(1,b),s,'linear','extrap');
-	roll(2,:) = interp1(s0(b),roll0(2,b),s,'linear','extrap');
-	roll(3,:) = interp1(s0(b),roll0(3,b),s,'linear','extrap');
 
+    % Interpolate offset
+    type = {'Girder'};
+	ord1=SC.ORD.(type{1})(1,:); % Beginning ordinates
+	ord2=SC.ORD.(type{1})(2,:); % End ordinates
+    roll = zeros(3,length(s));
+    for ith = 1:length(ord1)
+        ordsgir = [ord1(ith) ord2(ith)];
+        sgir = findspos(SC.RING,ordsgir);
+        if sgir(2) < sgir(1)
+            sgir(2) = sgir(2) + C;
+            s = s + C;
+        end
+        mask = (s >= sgir(1)) & (s <= sgir(2));
+	    roll(1,mask) = interp1(sgir,roll0(1,ordsgir),s(mask),'linear');
+	    roll(2,mask) = interp1(sgir,roll0(2,ordsgir),s(mask),'linear');
+	    roll(3,mask) = interp1(sgir,roll0(3,ordsgir),s(mask),'linear');
+    end
 end
 
 function supportOrds = getSupportOrds(SC)
