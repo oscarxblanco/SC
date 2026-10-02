@@ -46,9 +46,11 @@ function roll = SCgetSupportRoll(SC,s)
 	roll0 = zeros(3,length(s0));
 	
 	% Read elements length from RING
-	for n=1:length(SC.RING)
+    nelem = length(SC.RING);
+    lengths  = zeros(1,nelem);
+    for n=1:nelem
 		lengths(n) = SC.RING{n}.Length;
-	end
+    end
 	
 	% Circumference
 	C = sum(lengths);    
@@ -60,9 +62,9 @@ function roll = SCgetSupportRoll(SC,s)
 	supportOrds = getSupportOrds(SC);
 	
 	% Loop over support structure elements ('Section'->'Plinth'->'Girder')
-	for type = {'Section','Plinth','Girder'}
+    for type = {'Girder'}
 		% Check if support structure is registered
-		if isfield(supportOrds,type{1})
+        if isfield(supportOrds,type{1})
 			for nEl=1:length(supportOrds.(type{1}))
 				ords = supportOrds.(type{1}){nEl};
 				if ords(1)>ords(2)
@@ -83,7 +85,7 @@ function roll = SCgetSupportRoll(SC,s)
 				
 % 				fprintf('%s #%d: %.2fm\n',type{1},nEl,structLength)
 			end
-		end
+        end
     end
 
 
