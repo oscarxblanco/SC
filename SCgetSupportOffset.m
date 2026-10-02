@@ -54,7 +54,7 @@ function off = SCgetSupportOffset(SC,s)
 	sposMID = cumsum(lengths)-lengths./2; 
 
 	% Loop over support structure types
-	for type = {'Section','Plinth','Girder'}
+	for type = {'Girder'}
 		% Check if support structure is registered
 		if isfield(SC.ORD,type{1})
 			% Ordinates
@@ -83,12 +83,24 @@ function off = SCgetSupportOffset(SC,s)
 	% Workaround for bug in plotting which sometimes occurs when many adjacent markers in lattice file with variing offset
 	if ~isequal(s,s0)
 		% Get offsets at requested s-positions
-		[~,b] = unique(s0);
 		
 		% Interpolate offset
-		off(1,:) = interp1(s0(b),off0(1,b),s,'linear','extrap');
-		off(2,:) = interp1(s0(b),off0(2,b),s,'linear','extrap');
-		off(3,:) = interp1(s0(b),off0(3,b),s,'linear','extrap');
+        type = {'Girder'};
+		ord1=SC.ORD.(type{1})(1,:); % Beginning ordinates
+		ord2=SC.ORD.(type{1})(2,:); % End ordinates
+        off = zeros(3,length(s));
+        for ith = 1:length(ord1)
+            ordsgir = [ord1(ith) ord2(ith)];
+            sgir = findspos(SC.RING,ordsgir);
+            if sgir(2) < sgir(1)
+                sgir(2) = sgir(2) + C;
+                s = s + C;
+            end
+            mask = (s >= sgir(1)) & (s <= sgir(2));
+		    off(1,mask) = interp1(sgir,off0(1,ordsgir),s(mask),'linear');
+		    off(2,mask) = interp1(sgir,off0(2,ordsgir),s(mask),'linear');
+		    off(3,mask) = interp1(sgir,off0(3,ordsgir),s(mask),'linear');
+        end
 	else
 		% Take offset as piecewise interpolated before
 		off = off0;
