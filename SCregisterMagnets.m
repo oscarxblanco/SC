@@ -236,11 +236,14 @@ function SC = SCregisterMagnets(SC,MAGords,varargin)
 	% Specify which optional arguments should not be written as uncertanties in SC.SIG
 	keywords = {'HCM','VCM','CF','SkewQuad','MasterOf'};
 
-	% Get name/value-pairs for sigma structure
-	[nvpairs] = getSigmaPairs(keywords,varargin{:});
+    % get the distribution type
+    [inputdistype, varargin] = getoption(varargin, 'OffsetDistributionType','');
 
-	% Default truncation value for error distribution
-	cutoff = 2; 
+    % Get name/value-pairs for sigma structure
+    [nvpairs] = getSigmaPairs(keywords,varargin{:});
+
+    % Default truncation value for error distribution
+    cutoff = 2;
 	
 	% Loop over magnets
 	for ord = MAGords(:)'
@@ -285,13 +288,18 @@ function SC = SCregisterMagnets(SC,MAGords,varargin)
 		SC = setOptional(SC,ord,MAGords,varargin{:});
 
 		% Set name/pair-values in sigma structure
-		for i=1:2:(length(nvpairs)-1)
-			if iscell(nvpairs{i+1})
-				SC.SIG.Mag{ord}.(nvpairs{i}) = nvpairs{i+1};
+        for i=1:2:(length(nvpairs)-1)
+            if strcmp(nvpairs{i}, 'MagnetOffset')
+                distype = inputdistype;
+            else
+                distype = '';
+            end
+            if iscell(nvpairs{i+1})
+				SC.SIG.Mag{ord}.(nvpairs{i}) = {nvpairs{i+1}, 2, distype};
 			else
-				SC.SIG.Mag{ord}.(nvpairs{i}) = {nvpairs{i+1}, cutoff};
-			end
-		end
+				SC.SIG.Mag{ord}.(nvpairs{i}) = {nvpairs{i+1}, cutoff, distype};
+            end
+        end
 	end
 
 	% Store magnet ordinates
@@ -308,9 +316,9 @@ function [nvpairs] = getSigmaPairs(keywords,varargin)
 		if ~any(strcmp(varargin{n},keywords))
 			% Write input argument in sigma name/value-pair
 			if iscell(varargin{n+1})
-				nvpairs = horzcat(nvpairs,varargin{n},{varargin{n+1}});
+				nvpairs = horzcat(nvpairs,varargin{n},{varargin{n+1}}); %#ok<AGROW,CCAT1>
 			else
-				nvpairs = horzcat(nvpairs,varargin{n},varargin{n+1});
+				nvpairs = horzcat(nvpairs,varargin{n},varargin{n+1}); %#ok<AGROW>
 			end
 		end
 	end
