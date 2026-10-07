@@ -107,9 +107,12 @@ function SC = SCregisterSupport(SC,varargin)
 
 
 	% Check for any input
-	if length(varargin)<2
+    if length(varargin)<2
 		return
-	end
+    end
+
+    % get the distribution type
+    [inputdistype, varargin] = getoption(varargin, 'OffsetDistributionType','');
 
 	checkInput()
 
@@ -144,19 +147,29 @@ function SC = SCregisterSupport(SC,varargin)
 			% Check if individual cutoffs are defined
 			if iscell(varargin{i+1}(1,:))
 				% Define uncertainties for start points
-				SC.SIG.Support{ordPair(1)}.([type varargin{i}]) = {varargin{i+1}{1}(1,:),varargin{i+1}{2}};
+                if strcmp([type varargin{i}], 'GirderOffset')
+                    distype = inputdistype;
+                else
+                    distype = '';
+                end
+				SC.SIG.Support{ordPair(1)}.([type varargin{i}]) = {varargin{i+1}{1}(1,:),varargin{i+1}{2},distype};
 				% Check if endpoint uncertainties are given
 				if size(varargin{i+1}{1},1)==2
 					% Define uncertainties for endpoints
-					SC.SIG.Support{ordPair(2)}.([type varargin{i}]) = {varargin{i+1}{1}(2,:),varargin{i+1}{2}};
+					SC.SIG.Support{ordPair(2)}.([type varargin{i}]) = {varargin{i+1}{1}(2,:),varargin{i+1}{2},distyp};
 				end
 			else
 				% Define uncertainties for start points
-				SC.SIG.Support{ordPair(1)}.([type varargin{i}]) = {varargin{i+1}(1,:), cutoff};
+                if strcmp([type varargin{i}], 'GirderOffset')
+                    distype = inputdistype;
+                else
+                    distype = '';
+                end
+				SC.SIG.Support{ordPair(1)}.([type varargin{i}]) = {varargin{i+1}(1,:), cutoff,distype};
 				% Check if endpoint uncertainties are given
 				if size(varargin{i+1},1)==2
 					% Define uncertainties for endpoints
-					SC.SIG.Support{ordPair(2)}.([type varargin{i}]) = {varargin{i+1}(2,:),cutoff};
+					SC.SIG.Support{ordPair(2)}.([type varargin{i}]) = {varargin{i+1}(2,:),cutoff,distype};
 				end
 			end
 		end
