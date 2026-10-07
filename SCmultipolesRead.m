@@ -60,10 +60,10 @@ f=fopen(fname,'r');
 	if(size(tab,2)~=3); error('Incorrect table size.'); end
 	AB = tab(:,2:end);
 	idx=find(AB==1);
-	if nargout>1 && length(idx)~=1
+    if nargout>1 && length(idx)~=1
 		warning('Nominal order could not be (uniquely) determined. Continuing with idx=1.');
 		idx=1;
-	end;
+    end
 	[order,type] = ind2sub(size(AB),idx);
 	if type>2; error('Ill-defined magnet type.'); end
 end
