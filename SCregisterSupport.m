@@ -156,7 +156,7 @@ function SC = SCregisterSupport(SC,varargin)
 				% Check if endpoint uncertainties are given
 				if size(varargin{i+1}{1},1)==2
 					% Define uncertainties for endpoints
-					SC.SIG.Support{ordPair(2)}.([type varargin{i}]) = {varargin{i+1}{1}(2,:),varargin{i+1}{2},distyp};
+					SC.SIG.Support{ordPair(2)}.([type varargin{i}]) = {varargin{i+1}{1}(2,:),varargin{i+1}{2},distype};
 				end
 			else
 				% Define uncertainties for start points
