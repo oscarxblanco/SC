@@ -295,7 +295,7 @@ function SC = SCregisterMagnets(SC,MAGords,varargin)
                 distype = '';
             end
             if iscell(nvpairs{i+1})
-				SC.SIG.Mag{ord}.(nvpairs{i}) = {nvpairs{i+1}, 2, distype};
+				SC.SIG.Mag{ord}.(nvpairs{i}) = {nvpairs{i+1}{1}, nvpairs{i+1}{2}, distype};
 			else
 				SC.SIG.Mag{ord}.(nvpairs{i}) = {nvpairs{i+1}, cutoff, distype};
             end

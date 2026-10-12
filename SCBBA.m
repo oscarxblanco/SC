@@ -996,7 +996,7 @@ tmpBPMind = find(BPMord==par.RMstruct.BPMords);
 % Define reference orbit
 if par.useBPMreadingsForOrbBumpRef
     % Use actual BPM readings and add BBA-BPM target offset
-    R0 = SCgetBPMreading(SC);
+    R0 = SCgetBPMreading(SC,'BPMords',par.RMstruct.BPMords);
     R0(nDim,tmpBPMind) = R0(nDim,tmpBPMind) + par.BBABPMtarget;
 else
     % Zero everywhere except at BBA-BPM
