@@ -237,7 +237,8 @@ function SC = SCregisterMagnets(SC,MAGords,varargin)
 	keywords = {'HCM','VCM','CF','SkewQuad','MasterOf'};
 
     % get the distribution type
-    [inputdistype, varargin] = getoption(varargin, 'OffsetDistributionType','');
+    [inputoffsetdistype, varargin] = getoption(varargin, 'OffsetDistributionType','');
+    [inputrolldistype, varargin]   = getoption(varargin, 'RollDistributionType','');
 
     % Get name/value-pairs for sigma structure
     [nvpairs] = getSigmaPairs(keywords,varargin{:});
@@ -290,7 +291,12 @@ function SC = SCregisterMagnets(SC,MAGords,varargin)
 		% Set name/pair-values in sigma structure
         for i=1:2:(length(nvpairs)-1)
             if strcmp(nvpairs{i}, 'MagnetOffset')
-                distype = inputdistype;
+                distype = inputoffsetdistype;
+            else
+                distype = '';
+            end
+            if strcmp(nvpairs{i}, 'MagnetRoll')
+                distype = inputrolldistype;
             else
                 distype = '';
             end
