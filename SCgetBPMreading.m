@@ -31,6 +31,9 @@ function [B,T] = SCgetBPMreading(SC,varargin)
 %	[6 x 6] array defining the beam sigma matrix.
 % `randomInjectionZ`::
 %	[6 x 1] array defining the shot-to-shot injection jitter.
+% `orbitGuess` (optional)::
+%	Finite 6x1 initial guess for the closed orbit at the ring entrance.
+%	Used only in ORB mode; does not change the injected beam.
 % `trackMode`::
 %	String defining the tracking mode. If set to orbit mode ('ORB'), the AT
 %	function `findorbit6` is used to calculate the trajectories. Otherwise,
@@ -116,7 +119,7 @@ function [B,T] = SCgetBPMreading(SC,varargin)
 		% Switch orbit or tracking mode
 		if strcmp(SC.INJ.trackMode,'ORB')
 			% Calculate closed orbit
-			T = findorbit6(SC.RING, refOrds);%,SC.INJ.Z0);
+			T = SCgetClosedOrbit(SC,refOrds);
 		else
 			% Generate initial particle distribution
 			Zin = SCgenBunches(SC);
